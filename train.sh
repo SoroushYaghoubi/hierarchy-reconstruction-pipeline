@@ -11,13 +11,14 @@ python3 embed.py \
        -epochs 300 \
        -negs 50 \
        -burnin 20 \
-       -ndproc 4 \
+       -ndproc 1 \
        -model distance \
        -manifold poincare \
-       -dset wordnet/mammal_closure.csv \
-       -checkpoint mammals.pth \
+       -dset pipeline/artefacts/$1.csv \
+       -checkpoint pipeline/artefacts/$1.pth \
        -batchsize 10 \
        -eval_each 1 \
        -fresh \
        -sparse \
-       -train_threads 2
+       -train_threads 1 \
+       -gpu -1
