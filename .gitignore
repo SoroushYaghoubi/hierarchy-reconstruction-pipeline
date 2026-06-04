@@ -1,5 +1,3 @@
-*.pth
-*.pth.*
 *.so
 build
 __pycache__
@@ -10,3 +8,5 @@ hype/graph_dataset.cpp
 venv
 data
 .DS_Store
+poi_env/
+pipeline/artefacts
