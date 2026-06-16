@@ -96,7 +96,7 @@ def recover_tree_nn(embeddings, objects):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('checkpoint', help='Checkpoint stem (no path or extension)')
-    parser.add_argument('-method', choices=['angular', 'poincare', 'global', 'nn'], default='angular')
+    parser.add_argument('-method', choices=['angular', 'poincare'], default='angular')
     args = parser.parse_args()
 
     checkpoint_path = os.path.join(ARTEFACTS, args.checkpoint + '.pth.best')
@@ -106,21 +106,21 @@ if __name__ == '__main__':
 
     print(f"Nodes: {len(objects)}")
 
-    if args.method == 'global':
-        recovered_tree, root = recover_tree_global(embeddings, objects)
-        print(f"Detected root: {root}")
-        print(f"Root children: {recovered_tree[root]}")
-    elif args.method == 'nn':
-        recovered_tree, root = recover_tree_nn(embeddings, objects)
-        print(f"Detected root: {root}")
-        print(f"Root children: {recovered_tree[root]}")
-    else:
-        dist_fn = angular_dist if args.method == 'angular' else poincare_dist
-        recovered_tree = recover_tree(embeddings, objects, dist_fn)
-        print(f"Root children: {recovered_tree['root']}")
+    # if args.method == 'global':
+    #     recovered_tree, root = recover_tree_global(embeddings, objects)
+    #     print(f"Detected root: {root}")
+    #     print(f"Root children: {recovered_tree[root]}")
+    # elif args.method == 'nn':
+    #     recovered_tree, root = recover_tree_nn(embeddings, objects)
+    #     print(f"Detected root: {root}")
+    #     print(f"Root children: {recovered_tree[root]}")
+    # else:
+    dist_fn = angular_dist if args.method == 'angular' else poincare_dist
+    recovered_tree = recover_tree(embeddings, objects, dist_fn)
+    print(f"Root children: {recovered_tree['root']}")
 
     output_stem = args.checkpoint + f'_recovered_{args.method}'
-    write_tree(recovered_tree, output_stem)
+    # write_tree(recovered_tree, output_stem)
     write_closure(compute_closure(recovered_tree), output_stem)
     print(f"Saved to {output_stem}")
 

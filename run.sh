@@ -1,67 +1,53 @@
-#!/bin/bash
+#!/bin/sh
 
-DEPTH=${1:-6}
-BRANCH_FACT=${2:-2}
-DEPTH_VAR=${3:-1}
-BRANCH_VAR=${4:-0}
-RATE=${5:-0.2}
+NAME=${1:-dummytree}
+SEED=${2:-42}
 
-STEM="tree_d${DEPTH}_b${BRANCH_FACT}_dv${DEPTH_VAR}_bv${BRANCH_VAR}_$(date +%Y%m%d_%H%M%S)"
-ORIGINAL_STEM="${STEM}_original"
-CORRUPT_STEM="${ORIGINAL_STEM}_missing_$(python3 -c "print(int($RATE * 100))")"
+echo "==> Generating tree..."
+python pipeline/tree_gen.py \
+    -name ${NAME} \
+    -depth 7 \
+    -branch_fact 2 \
+    -stop_prob 0.0 \
+    -chain_prob 0.05 \
+    -seed $SEED
 
-echo "Running pipeline for: $STEM"
+echo "==> Corrupting closure..."
+python pipeline/tree_corrupt.py ${NAME} \
+    -type missing \
+    -rate 0.2 \
+    -seed $SEED
 
-echo 
-echo 
-echo 
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### #####     TREE GENERATION     ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-python ./pipeline/tree_gen.py \
-    -depth $DEPTH \
-    -branch_fact $BRANCH_FACT \
-    -depth_var $DEPTH_VAR \
-    -branch_var $BRANCH_VAR \
-    -name $STEM
+echo "==> Training Poincare embeddings..."
+python embed.py \
+    -dim 5 \
+    -lr 0.3 \
+    -epochs 50 \
+    -negs 50 \
+    -burnin 10 \
+    -ndproc 1 \
+    -model distance \
+    -manifold poincare \
+    -dset pipeline/artefacts/${NAME}_missing_20.csv \
+    -checkpoint pipeline/artefacts/${NAME}_missing_20.pth \
+    -batchsize 10 \
+    -eval_each 1 \
+    -fresh \
+    -sparse \
+    -train_threads 1 \
+    -gpu -1
 
-echo 
-echo 
-echo 
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### #####     TREE CORRUPTION     ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-python ./pipeline/tree_corrupt.py $ORIGINAL_STEM -rate $RATE
+echo "==> Recovering tree..."
+python pipeline/tree_rec.py ${NAME}_missing_20 \
+    -method poincare
+python pipeline/tree_rec.py ${NAME}_missing_20 \
+    -method angular
 
-echo 
-echo 
-echo 
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### #####     POINCARE EMBEDDING     ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-./train.sh $CORRUPT_STEM
+echo "==> Evaluating corrupted closure as is..."
+python pipeline/closure_comp.py ${NAME} ${NAME}_missing_20
 
-echo 
-echo 
-echo 
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### #####     TREE RECONSTRUCTION     ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-python ./pipeline/tree_rec.py $CORRUPT_STEM
+echo "==> Evaluating recovered closure with reverse Poincare algorithm..."
+python pipeline/closure_comp.py ${NAME} ${NAME}_missing_20_recovered_poincare
 
-echo 
-echo 
-echo 
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "      Done. Look into artefacts in pipeline/artefacts/"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
-echo "##### ##### ##### ##### ##### ##### ##### ##### ##### #####"
+echo "==> Evaluating recovered closure with respect to angle..."
+python pipeline/closure_comp.py ${NAME} ${NAME}_missing_20_recovered_angular

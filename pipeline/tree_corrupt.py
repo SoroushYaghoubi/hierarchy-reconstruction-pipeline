@@ -2,7 +2,7 @@ import random
 import argparse
 import numpy as np
 import scipy.sparse.csgraph as csg
-from tree_io import read_closure, write_closure, write_tree, compute_closure
+from tree_io import read_closure, write_closure, compute_closure
 
 # --- corruption functions ---
 
@@ -145,16 +145,13 @@ if __name__ == '__main__':
 
     write_closure(corrupted, output_stem)
 
-    naive = naive_closure_to_tree(corrupted)
-    write_tree(naive, output_stem + '_naive')
-    write_closure(compute_closure(naive), output_stem + '_naive')
+    # naive = naive_closure_to_tree(corrupted)
+    # write_closure(compute_closure(naive), output_stem + '_naive')
 
-    mst = mst_closure_to_tree(corrupted)
-    write_tree(mst, output_stem + '_mst')
-    write_closure(compute_closure(mst), output_stem + '_mst')
+    # mst = mst_closure_to_tree(corrupted)
+    # write_closure(compute_closure(mst), output_stem + '_mst')
 
-    cstm = custom_closure_to_tree(corrupted)
-    write_tree(cstm, output_stem + '_cstm')
-    write_closure(compute_closure(cstm), output_stem + '_cstm')
+    # cstm = custom_closure_to_tree(corrupted)
+    # write_closure(compute_closure(cstm), output_stem + '_cstm')
 
     print(f"Saved to pipeline/artefacts/{output_stem}")

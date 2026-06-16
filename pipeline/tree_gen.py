@@ -1,6 +1,6 @@
 import random 
 import argparse
-from tree_io import write_tree, write_closure, compute_closure
+from tree_io import write_closure, compute_closure
 
 def generate_tree(depth, branch_fact, stop_prob=0.0, chain_prob=0.0):
     tree = {}
@@ -47,5 +47,4 @@ if __name__ == '__main__':
     pretty_print_tree(tree)
     closure = compute_closure(tree)
     write_closure(closure, args.name)
-    write_tree(tree, args.name)
     print(f'Nodes: {len(tree)}, Closure edges: {len(closure)}')
