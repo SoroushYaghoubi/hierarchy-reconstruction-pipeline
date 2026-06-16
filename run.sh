@@ -1,7 +1,7 @@
 #!/bin/sh
 
-CORR_TYPE=$2
 NAME=$1
+CORR_TYPE=$2
 SEED=$3
 
 echo "==> Generating tree..."
@@ -16,7 +16,7 @@ python pipeline/tree_gen.py \
 echo "==> Corrupting closure..."
 python pipeline/tree_corrupt.py ${NAME} \
     -type ${CORR_TYPE} \
-    -rate 0.2 \
+    -rate 0.1 \
     -seed $SEED
 
 echo "==> Training Poincare embeddings..."
@@ -25,7 +25,7 @@ python embed.py \
     -lr 0.3 \
     -epochs 50 \
     -negs 50 \
-    -burnin 5 \
+    -burnin 10 \
     -ndproc 1 \
     -model distance \
     -manifold poincare \
