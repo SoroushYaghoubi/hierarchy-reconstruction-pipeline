@@ -1,7 +1,7 @@
 import os
 import torch
 import argparse
-from tree_io import write_tree
+from tree_io import write_tree, write_closure, compute_closure
 
 ARTEFACTS = os.path.join(os.path.dirname(__file__), 'artefacts')
 
@@ -36,20 +36,16 @@ def recover_tree(embeddings, objects, dist_fn):
 def recover_tree_global(embeddings, objects):
     N = len(objects)
 
-    # precompute all pairwise poincare distances
     dist_matrix = torch.zeros(N, N)
     for i in range(N):
         for j in range(N):
             if i != j:
                 dist_matrix[i][j] = poincare_dist(embeddings[i], embeddings[j])
 
-    # root = node with smallest mean distance to all others
     mean_dists = dist_matrix.mean(dim=1)
     root_idx = mean_dists.argmin().item()
     root = objects[root_idx]
 
-    # for every non-root node, parent = nearest node that is closer to root
-    # "closer to root" = smaller mean_dist value
     parent_of = {}
     for i, node in enumerate(objects):
         if i == root_idx:
@@ -69,20 +65,16 @@ def recover_tree_global(embeddings, objects):
 def recover_tree_nn(embeddings, objects):
     N = len(objects)
 
-    # precompute all pairwise poincare distances
     dist_matrix = torch.zeros(N, N)
     for i in range(N):
         for j in range(N):
             if i != j:
                 dist_matrix[i][j] = poincare_dist(embeddings[i], embeddings[j])
 
-    # root = node with smallest mean distance to all others
     mean_dists = dist_matrix.mean(dim=1)
     root_idx = mean_dists.argmin().item()
     root = objects[root_idx]
 
-    # for every non-root node, parent = nearest neighbor excluding itself
-    # but only among nodes that are closer to root (by direct poincare distance)
     dist_to_root = dist_matrix[:, root_idx]
 
     parent_of = {}
@@ -129,4 +121,6 @@ if __name__ == '__main__':
 
     output_stem = args.checkpoint + f'_recovered_{args.method}'
     write_tree(recovered_tree, output_stem)
+    write_closure(compute_closure(recovered_tree), output_stem)
     print(f"Saved to {output_stem}")
+

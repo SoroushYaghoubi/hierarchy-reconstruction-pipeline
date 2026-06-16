@@ -2,7 +2,7 @@ import random
 import argparse
 import numpy as np
 import scipy.sparse.csgraph as csg
-from tree_io import read_closure, write_closure, write_tree
+from tree_io import read_closure, write_closure, write_tree, compute_closure
 
 # --- corruption functions ---
 
@@ -142,8 +142,19 @@ if __name__ == '__main__':
     print(f"Corrupted edges: {len(corrupted)}")
 
     output_stem = f"{args.stem}_{args.type}_{int(args.rate * 100)}"
+
     write_closure(corrupted, output_stem)
-    write_tree(naive_closure_to_tree(corrupted), output_stem + '_naive')
-    write_tree(mst_closure_to_tree(corrupted), output_stem + '_mst')
-    write_tree(custom_closure_to_tree(corrupted), output_stem + '_cstm')
+
+    naive = naive_closure_to_tree(corrupted)
+    write_tree(naive, output_stem + '_naive')
+    write_closure(compute_closure(naive), output_stem + '_naive')
+
+    mst = mst_closure_to_tree(corrupted)
+    write_tree(mst, output_stem + '_mst')
+    write_closure(compute_closure(mst), output_stem + '_mst')
+
+    cstm = custom_closure_to_tree(corrupted)
+    write_tree(cstm, output_stem + '_cstm')
+    write_closure(compute_closure(cstm), output_stem + '_cstm')
+
     print(f"Saved to pipeline/artefacts/{output_stem}")

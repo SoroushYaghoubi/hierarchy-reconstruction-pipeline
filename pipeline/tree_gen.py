@@ -1,6 +1,6 @@
 import random 
 import argparse
-from tree_io import write_tree, write_closure
+from tree_io import write_tree, write_closure, compute_closure
 
 def generate_tree(depth, branch_fact, stop_prob=0.0, chain_prob=0.0):
     tree = {}
@@ -31,21 +31,6 @@ def pretty_print_tree(tree, node='root', p='', last=True):
     print(p + ('└── ' if last else '├── ') + node)
     for i, c in enumerate(tree[node]):
         pretty_print_tree(tree, c, p + ('    ' if last else '│   '), i == len(tree[node]) - 1)
-
-def compute_closure(tree):
-    parent_map = {}
-    for parent, children in tree.items():
-        for child in children:
-            parent_map[child] = parent
-
-    edges = []
-    for node in tree:
-        current = node
-        while current in parent_map:
-            current = parent_map[current]
-            edges.append((node, current))
-
-    return edges
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
