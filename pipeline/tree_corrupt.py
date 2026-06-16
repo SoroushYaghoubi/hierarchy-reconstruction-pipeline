@@ -65,7 +65,7 @@ if __name__ == '__main__':
     corrupted = CORRUPTION_FNS[args.type](edges, args.rate)
     print(f"Corrupted edges: {len(corrupted)}")
 
-    output_stem = f"{args.stem}_{args.type}_{int(args.rate * 100)}"
+    output_stem = f"{args.stem}_{args.type}"
 
     write_closure(corrupted, output_stem)
 

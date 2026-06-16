@@ -1,20 +1,21 @@
 #!/bin/sh
 
-NAME=${1:-dummytree}
-SEED=${2:-42}
+CORR_TYPE=$2
+NAME=$1
+SEED=$3
 
 echo "==> Generating tree..."
 python pipeline/tree_gen.py \
     -name ${NAME} \
-    -depth 7 \
+    -depth 6 \
     -branch_fact 2 \
     -stop_prob 0.0 \
-    -chain_prob 0.05 \
+    -chain_prob 0.0 \
     -seed $SEED
 
 echo "==> Corrupting closure..."
 python pipeline/tree_corrupt.py ${NAME} \
-    -type missing \
+    -type ${CORR_TYPE} \
     -rate 0.2 \
     -seed $SEED
 
@@ -24,12 +25,12 @@ python embed.py \
     -lr 0.3 \
     -epochs 50 \
     -negs 50 \
-    -burnin 10 \
+    -burnin 5 \
     -ndproc 1 \
     -model distance \
     -manifold poincare \
-    -dset pipeline/artefacts/${NAME}_missing_20.csv \
-    -checkpoint pipeline/artefacts/${NAME}_missing_20.pth \
+    -dset pipeline/artefacts/${NAME}_${CORR_TYPE}.csv \
+    -checkpoint pipeline/artefacts/${NAME}_${CORR_TYPE}.pth \
     -batchsize 10 \
     -eval_each 1 \
     -fresh \
@@ -38,16 +39,16 @@ python embed.py \
     -gpu -1
 
 echo "==> Recovering tree..."
-python pipeline/tree_rec.py ${NAME}_missing_20 \
+python pipeline/tree_rec.py ${NAME}_${CORR_TYPE} \
     -method poincare
-python pipeline/tree_rec.py ${NAME}_missing_20 \
+python pipeline/tree_rec.py ${NAME}_${CORR_TYPE} \
     -method angular
 
 echo "==> Evaluating corrupted closure as is..."
-python pipeline/closure_comp.py ${NAME} ${NAME}_missing_20
+python pipeline/closure_comp.py ${NAME} ${NAME}_${CORR_TYPE}
 
 echo "==> Evaluating recovered closure with reverse Poincare algorithm..."
-python pipeline/closure_comp.py ${NAME} ${NAME}_missing_20_recovered_poincare
+python pipeline/closure_comp.py ${NAME} ${NAME}_${CORR_TYPE}_recovered_poincare
 
 echo "==> Evaluating recovered closure with respect to angle..."
-python pipeline/closure_comp.py ${NAME} ${NAME}_missing_20_recovered_angular
+python pipeline/closure_comp.py ${NAME} ${NAME}_${CORR_TYPE}_recovered_angular
