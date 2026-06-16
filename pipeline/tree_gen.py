@@ -2,24 +2,29 @@ import random
 import argparse
 from tree_io import write_tree, write_closure
 
-def generate_tree(depth, branch_fact, depth_var=0, branch_var=0):
+def generate_tree(depth, branch_fact, stop_prob=0.0, chain_prob=0.0):
     tree = {}
     counter = 0
 
-    def add_node(parent, current_depth, local_max_depth):
+    def add_node(parent, current_depth):
         nonlocal counter
         node = 'root' if counter == 0 else f'node_{counter}'
         counter += 1
         tree[node] = []
         if parent is not None:
             tree[parent].append(node)
-        if current_depth < local_max_depth:
-            n_children = max(1, branch_fact + random.randint(-branch_var, branch_var))
-            for _ in range(n_children):
-                child_max_depth = depth + random.randint(-depth_var, depth_var)
-                add_node(node, current_depth + 1, child_max_depth)
+        if current_depth < depth:
+            # early stop — node becomes a leaf
+            if random.random() < stop_prob:
+                return
+            # chain — node gets exactly one child regardless of branch_fact
+            if random.random() < chain_prob:
+                add_node(node, current_depth + 1)
+                return
+            for _ in range(branch_fact):
+                add_node(node, current_depth + 1)
 
-    add_node(None, 0, depth)
+    add_node(None, 0)
     return tree
 
 def pretty_print_tree(tree, node='root', p='', last=True):
@@ -47,13 +52,15 @@ if __name__ == '__main__':
     parser.add_argument('-name', type=str, required=True)
     parser.add_argument('-depth', type=int, required=True)
     parser.add_argument('-branch_fact', type=int, required=True)
-    parser.add_argument('-depth_var', type=int, default=0)
-    parser.add_argument('-branch_var', type=int, default=0)
+    parser.add_argument('-stop_prob', type=float, default=0.0)
+    parser.add_argument('-chain_prob', type=float, default=0.0)
+    parser.add_argument('-seed', type=int, default=42)
     args = parser.parse_args()
+    random.seed(args.seed)
 
-    tree = generate_tree(args.depth, args.branch_fact, args.depth_var, args.branch_var)
+    tree = generate_tree(args.depth, args.branch_fact, args.stop_prob, args.chain_prob)
     pretty_print_tree(tree)
     closure = compute_closure(tree)
-    write_closure(closure, args.name + '_original')
-    write_tree(tree, args.name + '_original')
+    write_closure(closure, args.name)
+    write_tree(tree, args.name)
     print(f'Nodes: {len(tree)}, Closure edges: {len(closure)}')

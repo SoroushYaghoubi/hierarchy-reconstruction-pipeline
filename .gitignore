@@ -12,3 +12,4 @@ data
 .DS_Store
 poi_env/
 pipeline/artefacts/**
+.temp/

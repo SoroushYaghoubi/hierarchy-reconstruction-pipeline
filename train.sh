@@ -8,9 +8,9 @@
 python3 embed.py \
        -dim 5 \
        -lr 0.3 \
-       -epochs 300 \
+       -epochs 50 \
        -negs 50 \
-       -burnin 20 \
+       -burnin 10 \
        -ndproc 1 \
        -model distance \
        -manifold poincare \
