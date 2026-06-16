@@ -33,65 +33,65 @@ def recover_tree(embeddings, objects, dist_fn):
 
     return recovered_tree
 
-def recover_tree_global(embeddings, objects):
-    N = len(objects)
+# def recover_tree_global(embeddings, objects):
+#     N = len(objects)
 
-    dist_matrix = torch.zeros(N, N)
-    for i in range(N):
-        for j in range(N):
-            if i != j:
-                dist_matrix[i][j] = poincare_dist(embeddings[i], embeddings[j])
+#     dist_matrix = torch.zeros(N, N)
+#     for i in range(N):
+#         for j in range(N):
+#             if i != j:
+#                 dist_matrix[i][j] = poincare_dist(embeddings[i], embeddings[j])
 
-    mean_dists = dist_matrix.mean(dim=1)
-    root_idx = mean_dists.argmin().item()
-    root = objects[root_idx]
+#     mean_dists = dist_matrix.mean(dim=1)
+#     root_idx = mean_dists.argmin().item()
+#     root = objects[root_idx]
 
-    parent_of = {}
-    for i, node in enumerate(objects):
-        if i == root_idx:
-            continue
-        candidates = [j for j in range(N) if j != i and mean_dists[j] < mean_dists[i]]
-        if not candidates:
-            parent_of[node] = root
-            continue
-        parent_of[node] = objects[min(candidates, key=lambda j: dist_matrix[i][j].item())]
+#     parent_of = {}
+#     for i, node in enumerate(objects):
+#         if i == root_idx:
+#             continue
+#         candidates = [j for j in range(N) if j != i and mean_dists[j] < mean_dists[i]]
+#         if not candidates:
+#             parent_of[node] = root
+#             continue
+#         parent_of[node] = objects[min(candidates, key=lambda j: dist_matrix[i][j].item())]
 
-    recovered_tree = {node: [] for node in objects}
-    for node, parent in parent_of.items():
-        recovered_tree[parent].append(node)
+#     recovered_tree = {node: [] for node in objects}
+#     for node, parent in parent_of.items():
+#         recovered_tree[parent].append(node)
 
-    return recovered_tree, root
+#     return recovered_tree, root
 
-def recover_tree_nn(embeddings, objects):
-    N = len(objects)
+# def recover_tree_nn(embeddings, objects):
+#     N = len(objects)
 
-    dist_matrix = torch.zeros(N, N)
-    for i in range(N):
-        for j in range(N):
-            if i != j:
-                dist_matrix[i][j] = poincare_dist(embeddings[i], embeddings[j])
+#     dist_matrix = torch.zeros(N, N)
+#     for i in range(N):
+#         for j in range(N):
+#             if i != j:
+#                 dist_matrix[i][j] = poincare_dist(embeddings[i], embeddings[j])
 
-    mean_dists = dist_matrix.mean(dim=1)
-    root_idx = mean_dists.argmin().item()
-    root = objects[root_idx]
+#     mean_dists = dist_matrix.mean(dim=1)
+#     root_idx = mean_dists.argmin().item()
+#     root = objects[root_idx]
 
-    dist_to_root = dist_matrix[:, root_idx]
+#     dist_to_root = dist_matrix[:, root_idx]
 
-    parent_of = {}
-    for i, node in enumerate(objects):
-        if i == root_idx:
-            continue
-        candidates = [j for j in range(N) if j != i and dist_to_root[j] < dist_to_root[i]]
-        if not candidates:
-            parent_of[node] = root
-            continue
-        parent_of[node] = objects[min(candidates, key=lambda j: dist_matrix[i][j].item())]
+#     parent_of = {}
+#     for i, node in enumerate(objects):
+#         if i == root_idx:
+#             continue
+#         candidates = [j for j in range(N) if j != i and dist_to_root[j] < dist_to_root[i]]
+#         if not candidates:
+#             parent_of[node] = root
+#             continue
+#         parent_of[node] = objects[min(candidates, key=lambda j: dist_matrix[i][j].item())]
 
-    recovered_tree = {node: [] for node in objects}
-    for node, parent in parent_of.items():
-        recovered_tree[parent].append(node)
+#     recovered_tree = {node: [] for node in objects}
+#     for node, parent in parent_of.items():
+#         recovered_tree[parent].append(node)
 
-    return recovered_tree, root
+#     return recovered_tree, root
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
