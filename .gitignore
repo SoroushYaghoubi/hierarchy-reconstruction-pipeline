@@ -13,3 +13,4 @@ data
 poi_env/
 pipeline/artefacts/**
 .temp/
+nohup.out
