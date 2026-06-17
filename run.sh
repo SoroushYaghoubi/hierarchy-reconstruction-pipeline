@@ -7,7 +7,7 @@ SEED=$3
 echo "==> Generating tree..."
 python pipeline/tree_gen.py \
     -name ${NAME} \
-    -depth 6 \
+    -depth 7 \
     -branch_fact 2 \
     -stop_prob 0.0 \
     -chain_prob 0.0 \
