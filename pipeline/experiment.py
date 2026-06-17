@@ -7,7 +7,7 @@ from closure_comp import compare_closures
 
 ARTEFACTS = 'pipeline/artefacts'
 RESULTS = 'pipeline/results'
-RATES = [r / 100 for r in range(0, 31, 2)]
+RATES = [r / 100 for r in range(0, 52, 3)]
 SEED = 61
 os.makedirs(RESULTS, exist_ok=True)
 
@@ -83,11 +83,18 @@ def collect_best_annotations(x_vals, y_vals, z_dict):
             continue
         Z = np.array(Z)
         diff = Z - baseline
-        idx = np.unravel_index(np.argmax(diff), diff.shape)
-        best_x = x_vals[idx[1]]
-        best_y = y_vals[idx[0]]
-        best_diff = diff[idx]
-        lines.append(f'<b>{label}</b>: max gain={best_diff:+.3f} at rate={best_x}%, param={best_y}')
+        
+        idx_max = np.unravel_index(np.argmax(diff), diff.shape)
+        idx_min = np.unravel_index(np.argmin(diff), diff.shape)
+        
+        max_diff = diff[idx_max]
+        min_diff = diff[idx_min]
+        
+        lines.append(
+            f'<b>{label}</b>: '
+            f'max gain={max_diff:+.3f} at rate={x_vals[idx_max[1]]}%, param={y_vals[idx_max[0]]} | '
+            f'min gain={min_diff:+.3f} at rate={x_vals[idx_min[1]]}%, param={y_vals[idx_min[0]]}'
+        )
     return '<br>'.join(lines)
 
 def plot_3d(x_vals, y_vals, z_dict, xlabel, ylabel, zlabel, title, filename):
